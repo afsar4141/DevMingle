@@ -7,7 +7,7 @@ app.use(express.json());
 
 app.post("/signup", async (req, res) =>{
 
-    console.log(req.body);
+    //console.log(req.body);
 
     const user = new User(req.body);
     try{
@@ -17,6 +17,56 @@ app.post("/signup", async (req, res) =>{
         res.status(400).send("Error while adding user" + err.message);
     }
     
+});
+
+app.get("/user", async (req, res) => {
+    const userEmail = req.body.email;
+    try{
+        const user = await User.find({email : userEmail});
+        if(user.length === 0){
+            res.status(404).send("User not found");
+        }else{
+            res.send(user);
+        }
+        
+    }catch(err){
+        res.status(400).send("Error while fetching user" + err.message);
+    }
+})
+
+app.get("/feed", async (req, res) => {
+   
+    try{
+       const users = await User.find();
+       res.send(users);
+    }catch(err){
+        res.status(400).send("Error while fetching user" + err.message);
+    }
+
+});
+
+app.delete("/delete", async(req, res) => {
+    const userId = req.body.userId;
+    try{
+       const user = await User.findByIdAndDelete(userId);
+       res.send("user deleted successfully");
+
+    }catch(err){
+       res.status(400).send("Error in deleting user" + err.message);
+    }
+})
+
+app.patch("/update", async (req, res) =>{
+    const userId = req.body.userId;
+    const data = req.body;
+    try{
+        await User.findByIdAndUpdate({_id:userId},data,{
+            runValidators:true,
+        });
+        res.send("user updated successfully");
+    }catch(err){
+        res.status(400).send("Error in updating user" + err.message);
+    }
 })
 
 connectDB()
